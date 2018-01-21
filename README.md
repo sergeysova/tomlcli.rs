@@ -1,5 +1,8 @@
 # tomlcli
 
+[![Crates.io](https://img.shields.io/crates/v/tomlcli.svg?maxAge=2592000)](https://crates.io/crates/tomlcli)
+[![Crates.io](https://img.shields.io/crates/l/tomlcli.svg?maxAge=2592000)](https://github.com/sergeysova/tomlcli/blob/master/LICENSE)
+
 Pretty print and query TOML files
 
 ## How to use

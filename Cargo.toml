@@ -3,6 +3,7 @@ name = "tomlcli"
 version = "0.1.0"
 authors = ["Sergey Sova <mail@sergeysova.com>"]
 license = "MIT"
+homepage = "https://github.com/sergeysova/tomlcli.rs"
 repository = "https://github.com/sergeysova/tomlcli.rs"
 documentation = "https://docs.rs/tomlcli/"
 readme = "README.md"
