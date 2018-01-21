@@ -6,9 +6,14 @@ license = "MIT"
 repository = "https://github.com/sergeysova/tomlcli.rs"
 documentation = "https://docs.rs/tomlcli/"
 readme = "README.md"
-description = "Parse and query toml files"
+description = "Pretty print and query TOML files"
 keywords = ["toml", "cli", "parser", "print", "console", "terminal"]
 
 [dependencies]
 toml = "0.4.5"
 colored = "1.6.0"
+clap = "2.29.2"
+
+[[bin]]
+name = "toml"
+path = "./src/main.rs"

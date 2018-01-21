@@ -1,9 +1,14 @@
 extern crate colored;
 extern crate toml;
+#[macro_use]
+extern crate clap;
 
+use std::fs::File;
+use std::io::prelude::Read;
 use toml::Value;
 use colored::*;
 
+/// Immediatly recursive print value
 fn print_toml(value: &Value, parent_name: Option<&String>) {
     match *value {
         Value::String(ref string) => {
@@ -71,35 +76,83 @@ fn print_toml(value: &Value, parent_name: Option<&String>) {
     }
 }
 
+/// Search path like 'foo.bar.baz' in Value::Table recursively
+fn select_path<'a>(value: &'a Value, path: &String) -> Option<&'a Value> {
+    let chunks = path.split('.');
+    let mut current = Some(value);
+
+    for chunk in chunks {
+        if let Some(current_value) = current {
+            match *current_value {
+                Value::Table(ref table) => {
+                    if let Some(found) = table.get(chunk) {
+                        current = Some(found);
+                    }
+                    else {
+                        current = None;
+                    }
+                },
+                _ => {}
+            }
+        }
+    }
+
+    current
+}
+
+
 fn main() {
-    let raw = r#"
-root = 1123
-        [package]
-name = "tomlcli"
-version = "0.1.0"
-authors = ["Sergey Sova <mail@sergeysova.com>"]
-license = "MIT"
-repository = "https://github.com/sergeysova/tomlcli.rs"
-documentation = "https://docs.rs/tomlcli/"
-readme = "README.md"
-description = "Parse and query toml files"
-keywords = ["toml", "cli", "parser", "print", "console", "terminal"]
+    let matches = clap_app!(myapp =>
+        (name: crate_name!())
+        (version: crate_version!())
+        (author: crate_authors!())
+        (about: crate_description!())
+        (@arg PATH: +required "Path to TOML file relative to current working directory")
+        (@arg QUERY: "Filter is a dot-separated path to a property or category")
+        (@arg verbose: -V --verbose "Show debug info")
+    ).get_matches();
 
-[dependencies]
-toml = "0.4.5"
-colored = "1.6.0"
-demo = 1994-02-12
-ini = 1
-foo = false
-bar = true
-nfl = 2.51
-[dependencies.naf]
-version = 123
-[foo.bar.baz]
-baf = [1.2, 3.4, 5.6]
+    let verbose = matches.is_present("verbose");
+    let path = matches.value_of("PATH").unwrap();
 
-    "#;
+    match File::open(path) {
+        Ok(mut file) => {
+            let mut content = String::new();
+            file.read_to_string(&mut content).expect("Cannot read file");
 
-    let value: Value = raw.parse().unwrap();
-    print_toml(&value, None);
+            match content.parse::<Value>() {
+                Ok(value) => {
+                    if let Some(query) = matches.value_of("QUERY") {
+                        if let Some(found) = select_path(&value, &query.to_string()) {
+                            print_toml(found, None);
+                            println!("");
+                        }
+                        else {
+                            println!("{} Query '{}' not found", "Error:".red(), query.bold().yellow());
+                            std::process::exit(1);
+                        }
+                    }
+                    else {
+                        print_toml(&value, None);
+                    }
+                },
+                Err(error) => {
+                    println!("{} Cannot parse file '{}'", "Error:".red(), path.bold().yellow());
+
+                    if verbose {
+                        println!("{}", error);
+                    }
+                    std::process::exit(1);
+                }
+            }
+        },
+        Err(error) => {
+            println!("{} Cannot open file '{}'", "Error:".red(), path.bold().yellow());
+
+            if verbose {
+                println!("{}", error);
+            }
+            std::process::exit(1);
+        }
+    }
 }
