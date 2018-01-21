@@ -35,12 +35,19 @@ toml Cargo.lock package.0.name
 
 ## Todo
 
-Pretty print table in field:
+1. Pretty print table in field:
 
 ```toml
 [[bin]]
 name = "foo"
-path = "bar"
+path = "./bar.rs"
+```
+
+2. Query fields with dot:
+
+```toml
+[example]
+"foo.bar" = "example"
 ```
 
 ## License
