@@ -99,13 +99,24 @@ fn select_path<'a>(value: &'a Value, path: &String) -> Option<&'a Value> {
                     }
                 }
                 Value::Array(ref array) => {
-                    if let Ok(index) = chunk.parse::<i32>() {
-
+                    if let Ok(index) = chunk.parse::<usize>() {
+                        if index < array.len() {
+                            let element = &array[index];
+                            current = Some(element);
+                        }
+                        else {
+                            current = None;
+                            break;
+                        }
                     } else {
-
+                        current = None;
+                        break;
                     }
                 }
-                _ => {}
+                _ => {
+                    current = None;
+                    break;
+                }
             }
         } else {
 
