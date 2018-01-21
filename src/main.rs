@@ -4,7 +4,7 @@ extern crate toml;
 use toml::Value;
 use colored::*;
 
-fn print_toml(value: &Value, has_parent: bool, parent_name: &String) {
+fn print_toml(value: &Value, parent_name: Option<&String>) {
     match *value {
         Value::String(ref string) => {
             print!("{}{}{}", "\"".green(), string.green(), "\"".green());
@@ -27,7 +27,7 @@ fn print_toml(value: &Value, has_parent: bool, parent_name: &String) {
         Value::Array(ref array) => {
             print!("{}", "[".blue());
             for (index, val) in array.iter().enumerate() {
-                print_toml(&val, false, &String::new());
+                print_toml(&val, None);
 
                 if index < (array.len() - 1) {
                     print!("{} ", ",".blue());
@@ -41,7 +41,7 @@ fn print_toml(value: &Value, has_parent: bool, parent_name: &String) {
                     Value::Table(..) => {},
                     _ => {
                         print!("{} = ", name.blue());
-                        print_toml(value, false, &String::new());
+                        print_toml(value, None);
                         println!("");
                     }
                 }
@@ -52,7 +52,7 @@ fn print_toml(value: &Value, has_parent: bool, parent_name: &String) {
                         #[allow(unused_assignments)]
                         let mut fullname = String::new();
 
-                        if has_parent {
+                        if let Some(parent_name) = parent_name {
                             fullname = format!("{}.{}", parent_name, name);
                         }
                         else {
@@ -62,7 +62,7 @@ fn print_toml(value: &Value, has_parent: bool, parent_name: &String) {
                             println!("");
                             println!("{}{}{}", "[".blue(), fullname.white(), "]".blue());
                         }
-                        print_toml(value, true, &fullname);
+                        print_toml(value, Option::from(&fullname));
                     },
                     _ => {}
                 }
@@ -101,5 +101,5 @@ baf = [1.2, 3.4, 5.6]
     "#;
 
     let value: Value = raw.parse().unwrap();
-    print_toml(&value, false, &String::new());
+    print_toml(&value, None);
 }
