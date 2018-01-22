@@ -5,6 +5,10 @@
 
 Pretty print and query TOML files
 
+
+[![asciicast](https://asciinema.org/a/158411.png)](https://asciinema.org/a/158411)
+
+
 ## How to use
 
 ```bash
