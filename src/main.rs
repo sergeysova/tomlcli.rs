@@ -49,7 +49,7 @@ fn print_toml(value: &Value, parent_name: Option<&String>) {
                     _ => {
                         print!("{} = ", name.blue());
                         print_toml(value, None);
-                        println!("");
+                        println!();
                     }
                 }
             }
@@ -70,7 +70,7 @@ fn print_toml(value: &Value, parent_name: Option<&String>) {
                                .iter()
                                .filter(|&(_, ref value)| value.type_str() != "table")
                                .count() > 0 {
-                            println!("");
+                            println!();
                             println!("{}{}{}", "[".blue(), fullname.white(), "]".blue());
                         }
                         print_toml(value, Option::from(&fullname));
@@ -152,7 +152,7 @@ fn main() {
                     if let Some(query) = matches.value_of("QUERY") {
                         if let Some(found) = select_path(&value, &query.to_string()) {
                             print_toml(found, None);
-                            println!("");
+                            println!();
                         } else {
                             println!("{} Query '{}' not found",
                                      "Error:".red(),
