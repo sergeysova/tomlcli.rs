@@ -8,37 +8,83 @@ use std::io::prelude::Read;
 use toml::Value;
 use colored::*;
 
+fn magenta<T: Into<String>>(val: T, has_color: bool) -> impl std::fmt::Display {
+    let value = val.into().magenta();
+
+    if has_color { value } else { value.clear() }
+}
+
+fn green<T: Into<String>>(val: T, has_color: bool) -> impl std::fmt::Display {
+    let value = val.into().green();
+
+    if has_color { value } else { value.clear() }
+}
+
+fn purple<T: Into<String>>(val: T, has_color: bool) -> impl std::fmt::Display {
+    let value = val.into().purple();
+
+    if has_color { value } else { value.clear() }
+}
+
+fn yellow<T: Into<String>>(val: T, has_color: bool) -> impl std::fmt::Display {
+    let value = val.into().yellow();
+
+    if has_color { value } else { value.clear() }
+}
+
+fn blue<T: Into<String>>(val: T, has_color: bool) -> impl std::fmt::Display {
+    let value = val.into().blue();
+
+    if has_color { value } else { value.clear() }
+}
+
+fn white<T: Into<String>>(val: T, has_color: bool) -> impl std::fmt::Display {
+    let value = val.into().white();
+
+    if has_color { value } else { value.clear() }
+}
+
+fn red<T: Into<String>>(val: T, has_color: bool) -> impl std::fmt::Display {
+    let value = val.into().red();
+
+    if has_color { value } else { value.clear() }
+}
+
 /// Immediatly recursive print value
-fn print_toml(value: &Value, parent_name: Option<&String>) {
+fn print_toml(value: &Value, parent_name: Option<&String>, has_color: bool) {
     match *value {
         Value::String(ref string) => {
-            print!("{}{}{}", "\"".green(), string.green(), "\"".green());
+            print!("{}{}{}",
+                green("\"", has_color),
+                green(string.to_string(), has_color),
+                green("\"", has_color),
+            );
         }
         Value::Float(ref float) => {
-            print!("{}", float.to_string().purple());
+            print!("{}", purple(float.to_string(), has_color));
         }
         Value::Integer(ref integer) => {
-            print!("{}", integer.to_string().purple());
+            print!("{}", purple(integer.to_string(), has_color));
         }
         Value::Boolean(ref boolean) => {
             match *boolean {
-                true => print!("{}", "true".yellow()),
-                false => print!("{}", "false".yellow()),
+                true => print!("{}", yellow("true", has_color)),
+                false => print!("{}", yellow("false", has_color)),
             }
         }
         Value::Datetime(ref datetime) => {
-            print!("{}", datetime.to_string().magenta());
+            print!("{}", magenta(datetime.to_string(), has_color));
         }
         Value::Array(ref array) => {
             print!("{}", "[".blue());
             for (index, val) in array.iter().enumerate() {
-                print_toml(&val, None);
+                print_toml(&val, None, has_color);
 
                 if index < (array.len() - 1) {
-                    print!("{} ", ",".blue());
+                    print!("{} ", blue(",", has_color));
                 }
             }
-            print!("{}", "]".blue());
+            print!("{}", blue("]", has_color));
         }
         Value::Table(ref table) => {
             for (name, value) in table
@@ -47,8 +93,8 @@ fn print_toml(value: &Value, parent_name: Option<&String>) {
                 match *value {
                     Value::Table(..) => {}
                     _ => {
-                        print!("{} = ", name.blue());
-                        print_toml(value, None);
+                        print!("{} = ", blue(name.to_string(), has_color));
+                        print_toml(value, None, has_color);
                         println!();
                     }
                 }
@@ -71,9 +117,9 @@ fn print_toml(value: &Value, parent_name: Option<&String>) {
                                .filter(|&(_, ref value)| value.type_str() != "table")
                                .count() > 0 {
                             println!();
-                            println!("{}{}{}", "[".blue(), fullname.white(), "]".blue());
+                            println!("{}{}{}", blue("[", has_color), white(fullname.to_string(), has_color), blue("]", has_color));
                         }
-                        print_toml(value, Option::from(&fullname));
+                        print_toml(value, Option::from(&fullname), has_color);
                     }
                     _ => {}
                 }
@@ -135,10 +181,12 @@ fn main() {
         (@arg PATH: +required "Path to TOML file relative to current working directory")
         (@arg QUERY: "Filter is a dot-separated path to a property or category")
         (@arg verbose: -V --verbose "Show debug info")
+        (@arg no_color: -W --nocolor "Disable color output")
     )
             .get_matches();
 
     let verbose = matches.is_present("verbose");
+    let has_color = !matches.is_present("no_color");
     let path = matches.value_of("PATH").unwrap();
 
     match File::open(path) {
@@ -151,22 +199,22 @@ fn main() {
                 Ok(value) => {
                     if let Some(query) = matches.value_of("QUERY") {
                         if let Some(found) = select_path(&value, &query.to_string()) {
-                            print_toml(found, None);
+                            print_toml(found, None, has_color);
                             println!();
                         } else {
                             println!("{} Query '{}' not found",
-                                     "Error:".red(),
-                                     query.bold().yellow());
+                                     red("Error:", has_color),
+                                     yellow(query, has_color));
                             std::process::exit(1);
                         }
                     } else {
-                        print_toml(&value, None);
+                        print_toml(&value, None, has_color);
                     }
                 }
                 Err(error) => {
                     println!("{} Cannot parse file '{}'",
-                             "Error:".red(),
-                             path.bold().yellow());
+                             red("Error:", has_color),
+                             yellow(path, has_color));
 
                     if verbose { println!("{}", error); }
                     std::process::exit(1);
@@ -175,8 +223,8 @@ fn main() {
         }
         Err(error) => {
             println!("{} Cannot open file '{}'",
-                     "Error:".red(),
-                     path.bold().yellow());
+                     red("Error:", has_color),
+                     yellow(path, has_color));
 
             if verbose {
                 println!("{}", error);
